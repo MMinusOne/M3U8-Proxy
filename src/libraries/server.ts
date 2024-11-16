@@ -379,6 +379,8 @@ function getHandler(options, proxy) {
 
 // Create server with default and given values
 // Creator still needs to call .listen()
+
+
 function createServer(options) {
     options = options || {};
 
@@ -403,22 +405,27 @@ function createServer(options) {
         server = http.createServer(requestHandler);
     }
 
+    // Set CORS headers to allow any origin
+    server.on('request', (req, res) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+        res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
+        if (req.method === "OPTIONS") {
+            res.writeHead(204);
+            res.end();
+            return;
+        }
+    });
+
     // When the server fails, just show a 404 instead of Internal server error
     proxyServer.on("error", function (err, req, res) {
         if (res.headersSent) {
-            // This could happen when a protocol error occurs when an error occurs
-            // after the headers have been received (and forwarded). Do not write
-            // the headers because it would generate an error.
-            // Prior to Node 13.x, the stream would have ended.
-            // As of Node 13.x, we must explicitly close it.
             if (res.writableEnded === false) {
                 res.end();
             }
             return;
         }
 
-        // When the error occurs after setting headers but before writing the response,
-        // then any previously set headers must be removed.
         const headerNames = res.getHeaderNames ? res.getHeaderNames() : Object.keys(res._headers || {});
         headerNames.forEach(function (name) {
             res.removeHeader(name);
