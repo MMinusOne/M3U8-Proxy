@@ -662,8 +662,6 @@ export async function vttProxy(url: string, req, res: http.ServerResponse) {
         r.pipe(res, { end: true });
     });
 
-    req.pipe(proxy, { end: true });
-
     proxy.on("error", (err) => {
         console.error("Proxy error:", err);
         res.writeHead(500);
