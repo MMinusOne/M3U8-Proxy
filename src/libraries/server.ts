@@ -659,22 +659,22 @@ export async function vttProxy(url: string, req, res: http.ServerResponse) {
 
     const proxy = http.request(options, (r) => {
         // Check if headers have already been sent before writing new headers
-        if (!res.headersSent) {
-            res.writeHead(r.statusCode ?? 200, r.headers);
-        }
+        // if (!res.headersSent) {
+        //     res.writeHead(r.statusCode ?? 200, r.headers);
+        // }
         r.pipe(res, { end: true });
     });
 
-    req.pipe(proxy, { end: true });
+    // req.pipe(proxy, { end: true });
 
-    proxy.on("error", (err) => {
-        console.error("Proxy error:", err);
-        // Check if headers have already been sent before writing new headers
-        if (!res.headersSent) {
-            res.writeHead(500);
-            res.end("Internal Server Error");
-        }
-    });
+    // proxy.on("error", (err) => {
+    //     console.error("Proxy error:", err);
+    //     // Check if headers have already been sent before writing new headers
+    //     if (!res.headersSent) {
+    //         res.writeHead(500);
+    //         res.end("Internal Server Error");
+    //     }
+    // });
 }
 
 /**
