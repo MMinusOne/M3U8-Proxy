@@ -324,11 +324,11 @@ function getHandler(options, proxy) {
                 }
                 const url = uri.searchParams.get("url");
                 return proxyTs(url ?? "", headers, req, res);
-            } else if (uri.pathname === "/") {
-                return res.end(readFileSync(join(__dirname, "../index.html")));
             } else if (uri.pathname === "/vtt-proxy") {
                 const url = uri.searchParams.get("url");
                 return vttProxy(url ?? "", req, res);
+            } else if (uri.pathname === "/") {
+                return res.end(readFileSync(join(__dirname, "../index.html")));
             } else {
                 res.writeHead(404, "Invalid host", cors_headers);
                 res.end("Invalid host: " + location.hostname);
@@ -664,10 +664,10 @@ export async function vttProxy(url: string, req, res: http.ServerResponse) {
 
     req.pipe(proxy, { end: true });
 
-    proxy.on('error', (err) => {
-        console.error('Proxy error:', err);
+    proxy.on("error", (err) => {
+        console.error("Proxy error:", err);
         res.writeHead(500);
-        res.end('Internal Server Error');
+        res.end("Internal Server Error");
     });
 }
 
