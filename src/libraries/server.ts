@@ -326,6 +326,9 @@ function getHandler(options, proxy) {
                 return proxyTs(url ?? "", headers, req, res);
             } else if (uri.pathname === "/") {
                 return res.end(readFileSync(join(__dirname, "../index.html")));
+            } else if (uri.pathname === "/vtt-proxy") {
+                const url = uri.searchParams.get("url");
+                return vttProxy(url ?? "", req, res);
             } else {
                 res.writeHead(404, "Invalid host", cors_headers);
                 res.end("Invalid host: " + location.hostname);
@@ -640,6 +643,32 @@ export async function proxyM3U8(url: string, headers: any, res: http.ServerRespo
         res.end(newLines.join("\n"));
         return;
     }
+}
+
+export async function vttProxy(url: string, req, res: http.ServerResponse) {
+    const uri = new URL(url);
+    const options = {
+        hostname: uri.hostname,
+        port: uri.port,
+        path: uri.pathname + uri.search,
+        method: req.method,
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36",
+        },
+    };
+
+    const proxy = http.request(options, (r) => {
+        res.writeHead(r.statusCode ?? 200, r.headers);
+        r.pipe(res, { end: true });
+    });
+
+    req.pipe(proxy, { end: true });
+
+    proxy.on('error', (err) => {
+        console.error('Proxy error:', err);
+        res.writeHead(500);
+        res.end('Internal Server Error');
+    });
 }
 
 /**
