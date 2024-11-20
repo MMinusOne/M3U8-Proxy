@@ -8,7 +8,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.proxyTs = exports.proxyM3U8 = void 0;
+exports.proxyTs = exports.vttProxy = exports.proxyM3U8 = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const http_proxy_1 = __importDefault(require("http-proxy"));
@@ -216,6 +216,15 @@ function getHandler(options, proxy) {
             }));
     };
     return function (req, res) {
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
+        res.setHeader("Access-Control-Allow-Headers", "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version");
+        // Handle preflight requests
+        if (req.method === "OPTIONS") {
+            res.status(200).end();
+            return;
+        }
         req.corsAnywhereRequestState = {
             getProxyForUrl: corsAnywhere.getProxyForUrl,
             maxRedirects: corsAnywhere.maxRedirects,
@@ -291,6 +300,10 @@ function getHandler(options, proxy) {
                 }
                 const url = uri.searchParams.get("url");
                 return proxyTs(url ?? "", headers, req, res);
+            }
+            else if (uri.pathname === "/vtt-proxy") {
+                const url = uri.searchParams.get("url");
+                return vttProxy(url ?? "", req, res);
             }
             else if (uri.pathname === "/") {
                 return res.end((0, node_fs_1.readFileSync)((0, node_path_1.join)(__dirname, "../index.html")));
@@ -586,6 +599,29 @@ async function proxyM3U8(url, headers, res) {
     }
 }
 exports.proxyM3U8 = proxyM3U8;
+async function vttProxy(url, req, res) {
+    const uri = new URL(url);
+    const options = {
+        hostname: uri.hostname,
+        port: uri.port,
+        path: uri.pathname + uri.search,
+        method: req.method,
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36",
+        },
+    };
+    const proxy = node_http_1.default.request(options, (r) => {
+        res.writeHead(r.statusCode ?? 200, r.headers);
+        r.pipe(res, { end: true });
+    });
+    req.pipe(proxy, { end: true });
+    proxy.on("error", (err) => {
+        console.error("Proxy error:", err);
+        res.writeHead(500);
+        res.end("Internal Server Error");
+    });
+}
+exports.vttProxy = vttProxy;
 /**
  * @description Proxies TS files. Sometimes TS files require headers to be sent with the request.
  * @param headers JSON headers
@@ -646,7 +682,4 @@ async function proxyTs(url, headers, req, res) {
         return null;
     }
 }
-
-
-
 exports.proxyTs = proxyTs;

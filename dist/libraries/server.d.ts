@@ -12,6 +12,7 @@ export default function server(): void;
  * @param res Server response object
  */
 export declare function proxyM3U8(url: string, headers: any, res: http.ServerResponse): Promise<void>;
+export declare function vttProxy(url: string, req: any, res: http.ServerResponse): Promise<void>;
 /**
  * @description Proxies TS files. Sometimes TS files require headers to be sent with the request.
  * @param headers JSON headers
