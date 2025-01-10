@@ -14,7 +14,7 @@
   "main": "./built/server.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "build": "npm run build:ts",
+    "build": "CI=false npm run build:ts",
     "build:ts": "npm run lint && tsc --build && npm run copy-files",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.txt dist/",
     "clean": "tsc --build --clean",
