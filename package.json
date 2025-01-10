@@ -13,15 +13,7 @@
   "version": "0.0.1",
   "main": "./built/server.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "build": "CI=false npm run build:ts",
-    "build:ts": "npm run lint && tsc --build && npm run copy-files",
-    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.txt dist/",
-    "clean": "tsc --build --clean",
-    "start": "node ./dist/index.js",
-    "eslint": "eslint --ext .ts src/** --fix",
-    "prettier": "prettier --write .",
-    "lint": "npm run eslint && npm run prettier"
+    "start": "node ./dist/index.js"
   },
   "author": "MMinusOne",
   "license": "ISC",
